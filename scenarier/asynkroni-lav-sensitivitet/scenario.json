@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "1.0",
+  "generator": "Respirator Scenario-Generator",
+  "exportedAt": "2026-09-21T07:39:54.663Z",
+  "meta": {
+    "id": "asynkroni_lav_trigger_senitivitet",
+    "title": "Asynkroni lav trigger senitivitet",
+    "description": "Dette viser hva som skjer når trigger er innstilt for lavt og respirator gir trykkstøtte på feil grunnlag.",
+    "author": "Petter",
+    "learningObjectives": [
+      "Gjenkjenne lav trigger sensitivitet"
+    ],
+    "answerKey": {
+      "optimalSettings": "Økning av triggerfølsomhet til en høyere terskel vil gi korrekt synkronisering",
+      "expectedResponse": "Ved økning av trigger sensitivitet vil respirasjonsfrekvens kun være trigget av pasient, ikke av andre påvirkninger (hjerteslag)",
+      "notes": ""
+    }
+  },
+  "initialState": {
+    "machine": {
+      "mode": "PS",
+      "ipap": 10,
+      "epap": 5,
+      "vcTidalVolume": 500,
+      "vcPeakFlow": 60,
+      "vcFlowPattern": "constant",
+      "inspPause": 0,
+      "tiSet": 1,
+      "backupRate": 12,
+      "stActive": false,
+      "fio2": 30,
+      "rr": 12,
+      "triggerMode": "flow",
+      "trigger": 1,
+      "cycling": 25,
+      "tiMax": 2,
+      "riseTime": 150,
+      "leak": 0
+    },
+    "patient": {
+      "height": 175,
+      "gender": "male",
+      "compliance": 76,
+      "resistance": 7,
+      "rrSpont": 16,
+      "pmus": 10,
+      "responsiveness": 10,
+      "responsivePmus": true,
+      "pmusOffset": 0,
+      "tiNeural": 1,
+      "kobleTiNeural": false,
+      "triseNeural": 0.1,
+      "tholdNeural": 0.35,
+      "tdecayNeural": 0.45,
+      "pmusExp": 0,
+      "recoil": 25,
+      "flowLimitation": 0,
+      "criticalClosingPressure": 0,
+      "flowConductance": 1,
+      "peepStenting": 0,
+      "expRatio": 1,
+      "variability": 21,
+      "cardiacArtifact": 2.2,
+      "stressIndex": 1,
+      "stressIndexEnabled": false,
+      "uip": 30,
+      "uipEnabled": false,
+      "airwayOpening": 0,
+      "recruitedVolume": 0,
+      "entrainmentRatio": 1,
+      "entrainmentEnabled": false
+    },
+    "alarms": {
+      "apneaDelay": 20,
+      "alarmLeak": 40,
+      "alarmLowVt": 300,
+      "alarmHighVt": 800,
+      "alarmLowRr": 0,
+      "alarmHighRr": 30,
+      "alarmHighPpeak": 40
+    }
+  },
+  "uiConfig": {
+    "visibleControls": [
+      "ipap",
+      "epap",
+      "fio2",
+      "kobleTiNeural"
+    ],
+    "controls": [
+      {
+        "key": "ipap",
+        "group": "machine",
+        "label": "IPAP / inspiratorisk trykk",
+        "type": "range",
+        "unit": "cmH₂O",
+        "default": 10,
+        "min": 8,
+        "max": 30,
+        "step": 1
+      },
+      {
+        "key": "epap",
+        "group": "machine",
+        "label": "EPAP / PEEP",
+        "type": "range",
+        "unit": "cmH₂O",
+        "default": 5,
+        "min": 3,
+        "max": 15,
+        "step": 1
+      },
+      {
+        "key": "fio2",
+        "group": "machine",
+        "label": "FiO₂",
+        "type": "range",
+        "unit": "%",
+        "default": 30,
+        "min": 21,
+        "max": 100,
+        "step": 1
+      },
+      {
+        "key": "kobleTiNeural",
+        "group": "patient",
+        "label": "Utled innsatsform fra Ti_neural",
+        "type": "checkbox",
+        "unit": null,
+        "default": false
+      }
+    ]
+  }
+}

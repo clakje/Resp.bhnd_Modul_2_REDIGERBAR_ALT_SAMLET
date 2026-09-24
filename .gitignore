@@ -1,0 +1,4 @@
+# Byggefiler og originaler hører ikke hjemme i repoet
+*.zip
+originaler/
+node_modules/

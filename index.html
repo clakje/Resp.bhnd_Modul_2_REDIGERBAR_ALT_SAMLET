@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="no" data-tekst-side="hovedmeny">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hovedmeny for NIV-scenariene om samspill mellom pasient og respirator.">
+    <title>NIV – hovedmeny</title>
+
+    <!-- Egen kopi av design-tokens: menyen lenker ikke til scenarioenes css-filer -->
+    <link rel="stylesheet" href="meny.css">
+
+    <!-- Redigerbare tekster (se felles/redigering.js). Teksten skjules til den er hentet, maks 10 s. -->
+    <link rel="stylesheet" href="felles/redigering.css">
+    <script>document.documentElement.classList.add('tekster-laster'); setTimeout(function () { document.documentElement.classList.remove('tekster-laster'); }, 10000);</script>
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="brand-section">
+            <span class="logo-badge">NIV</span>
+            <h1 class="brand-title" id="menyTittel">NIV – samspill mellom pasient og respirator</h1>
+        </div>
+
+        <div class="header-controls">
+            <button type="button" id="btnVeiledning" class="btn-header" aria-haspopup="dialog" aria-controls="veiledningOverlay">
+                <span aria-hidden="true">?</span> <span>Brukerveiledning</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="meny-innhold">
+        <!-- Innledning: fylles fra MENY_DATA -->
+        <section class="meny-innledning" aria-labelledby="innledningOverskrift">
+            <h2 id="innledningOverskrift"></h2>
+            <div id="innledningTekst"></div>
+        </section>
+
+        <!-- Scenariene med samspillsproblemer -->
+        <section aria-labelledby="problemOverskrift">
+            <h2 id="problemOverskrift" class="visuelt-skjult">Scenarier med samspillsproblemer</h2>
+            <ul class="kort-rutenett" id="kortProblem"></ul>
+        </section>
+
+        <hr class="meny-skillelinje">
+
+        <!-- Referansescenario (frisk pasient, optimale innstillinger) -->
+        <section aria-labelledby="referanseOverskrift">
+            <h2 id="referanseOverskrift" class="visuelt-skjult">Referansescenario</h2>
+            <ul class="kort-rutenett" id="kortReferanse"></ul>
+        </section>
+
+        <p class="meny-merknad" id="menyMerknad"></p>
+    </main>
+
+    <!-- Brukerveiledning: åpnes med knappen i headeren, lukkes med ✕, «Lukk» eller Esc -->
+    <div id="veiledningOverlay" class="info-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="veiledningOverskrift">
+        <div class="info-modal" id="veiledningModal">
+            <div class="info-header">
+                <h2 id="veiledningOverskrift"></h2>
+                <button type="button" id="btnLukkVeiledningX" class="info-close-x" aria-label="Lukk brukerveiledningen">✕</button>
+            </div>
+
+            <div class="info-body veiledning-body" id="veiledningTekst"></div>
+
+            <div class="info-footer">
+                <button type="button" id="btnLukkVeiledning" class="info-close-btn">Lukk</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="meny-data.js"></script>
+    <script src="meny.js"></script>
+
+    <script src="felles/tekster-data.js"></script>
+    <script src="felles/vendor/purify.min.js"></script>
+    <script src="felles/redigering.js"></script>
+</body>
+</html>

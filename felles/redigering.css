@@ -1,0 +1,321 @@
+/**
+ * redigering.css — tekstboksene (alle sider) og redigeringspanelet (bare redigeringsversjonen).
+ * Fargene hentes fra variablene i meny.css / style.css.
+ */
+
+/* ------------------------------------------------------------ Lasting */
+/* Skjuler standardteksten til tekstene fra Google Sheets er på plass */
+html.tekster-laster [data-tekst],
+html.tekster-laster [data-tekst-kopi] { visibility: hidden; }
+
+.tekst-seksjon-tom { display: none !important; }
+
+/* ------------------------------------------------ Innhold i tekstboksene */
+/* style.css nullstiller alle marger, så avsnitt og lister trenger egen avstand */
+[data-tekst] > p + p,
+[data-tekst] > p + ul,
+[data-tekst] > p + ol,
+[data-tekst] > ul + p,
+[data-tekst] > ol + p { margin-top: 8px; }
+
+[data-tekst] ul,
+[data-tekst] ol { margin: 0; padding-left: 20px; }
+
+[data-tekst] a { color: var(--color-accent, #38bdf8); text-decoration: underline; }
+
+.tekst-ingress p {
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* Fasit-seksjonene i «Forslag til løsning» */
+.info-image-view .info-section { margin-top: 18px; }
+
+/* ================================================== Redigeringsmodus */
+.tekstboks-redigerer {
+    display: block;
+    position: relative;
+    min-width: 0;
+}
+
+/* Boksene som står i en rad (etikett ved symbol, tittel ved lukkeknapp) skal fylle raden */
+dt > .tekstboks-redigerer,
+.info-header > .tekstboks-redigerer,
+.kort-topp > .tekstboks-redigerer { flex: 1 1 auto; }
+
+.tekstboks-redigerer .ql-container.ql-snow {
+    height: auto;   /* Quill har 100 %, som flyter over i kortene i menyen */
+    font: inherit;
+    color: inherit;
+    border: 1px dashed var(--color-accent, #38bdf8);
+    border-radius: 4px;
+    background: rgba(56, 189, 248, 0.05);
+}
+
+.tekstboks-redigerer.aktiv .ql-container.ql-snow {
+    border-style: solid;
+    background: rgba(56, 189, 248, 0.1);
+}
+
+.tekstboks-redigerer .ql-editor {
+    padding: 4px 6px;
+    line-height: inherit;
+    min-height: 1.6em;
+    overflow-y: visible;
+}
+
+.tekstboks-redigerer .ql-editor p + p,
+.tekstboks-redigerer .ql-editor p + ol,
+.tekstboks-redigerer .ql-editor ol + p { margin-top: 8px; }
+
+.tekstboks-redigerer .ql-editor ol { padding-left: 1.2em; }
+
+.tekstboks-redigerer .ql-editor.ql-blank::before {
+    left: 6px;
+    right: 6px;
+    color: rgba(255, 255, 255, 0.45);
+    font-style: italic;
+}
+
+.tekstboks-redigerer .ql-editor a { color: var(--color-accent, #38bdf8); }
+
+/* Verktøylinjen vises bare for boksen man skriver i */
+.tekstboks-redigerer .ql-toolbar.ql-snow { display: none; }
+
+.tekstboks-redigerer.aktiv .ql-toolbar.ql-snow {
+    display: block;
+    margin-top: 4px;
+    padding: 4px 6px;
+    background: #e2e8f0;
+    border: none;
+    border-radius: 4px;
+    font-family: var(--font-ui, sans-serif);
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.tekstboks-redigerer .ql-snow .ql-tooltip {
+    z-index: 30;
+    color: #0f172a;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+/* Kortene i menyen er lenker i lesemodus; i redigeringsmodus er det bare «Åpne scenario» */
+html.redigeringsmodus .kort-lenke::after { display: none; }
+
+/* ------------------------------------------------------------ Panelet */
+.redigering-panel {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 20000;
+    width: max-content;
+    max-width: min(380px, calc(100vw - 32px));
+    padding: 10px 14px;
+    background: #0b1220;
+    border: 1px solid var(--color-accent, #38bdf8);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-family: var(--font-ui, sans-serif);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.redigering-rad {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bryter-etikett { font-weight: 600; opacity: 0.6; }
+.redigering-rad .bryter-etikett:first-child { opacity: 1; }
+html.redigeringsmodus .redigering-rad .bryter-etikett:first-child { opacity: 0.6; }
+html.redigeringsmodus .redigering-rad .bryter-etikett:last-child { opacity: 1; color: var(--color-accent, #38bdf8); }
+
+.bryter {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+    flex: none;
+}
+
+.bryter-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.bryter-spor {
+    position: absolute;
+    inset: 0;
+    background: #334155;
+    border-radius: 12px;
+    transition: background 0.15s ease;
+}
+
+.bryter-spor::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.15s ease;
+}
+
+.bryter-input:checked + .bryter-spor { background: var(--color-accent, #38bdf8); }
+.bryter-input:checked + .bryter-spor::after { transform: translateX(18px); }
+.bryter-input:focus-visible + .bryter-spor { outline: 2px solid #fff; outline-offset: 2px; }
+.bryter-input:disabled { cursor: wait; }
+
+.redigering-verktoy { display: none; }
+
+html.redigeringsmodus .redigering-verktoy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.redigering-navn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.redigering-navn span { flex: none; }
+
+.redigering-navn input {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px;
+    background: #131c31;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    color: #fff;
+    font: inherit;
+}
+
+.redigering-knapper {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.red-knapp {
+    padding: 7px 12px;
+    background: #1a2640;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.red-knapp:hover:not(:disabled) { border-color: var(--color-accent, #38bdf8); }
+.red-knapp:disabled { opacity: 0.45; cursor: default; }
+.red-knapp:focus-visible,
+.redigering-navn input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.red-lagre {
+    background: var(--color-accent, #38bdf8);
+    border-color: var(--color-accent, #38bdf8);
+    color: #04121c;
+}
+
+.red-lagre:hover:not(:disabled) { filter: brightness(1.12); }
+
+.redigering-status:empty { display: none; }
+.redigering-status { margin-top: 8px; }
+.redigering-status.status-ulagret { color: #fde047; }
+.redigering-status.status-ok { color: #4ade80; }
+.redigering-status.status-advarsel { color: #fdba74; }
+.redigering-status.status-feil { color: #fca5a5; }
+
+/* ---------------------------------------------------------- Historikk */
+.red-historikk-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20001;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+    background: rgba(3, 7, 18, 0.82);
+    font-family: var(--font-ui, sans-serif);
+}
+
+.red-historikk-dialog {
+    width: 100%;
+    max-width: 640px;
+    max-height: min(85vh, 760px);
+    display: flex;
+    flex-direction: column;
+    background: #131c31;
+    border: 1px solid #334155;
+    border-top: 3px solid var(--color-accent, #38bdf8);
+    border-radius: 10px;
+    color: #fff;
+}
+
+.red-historikk-topp {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px 4px;
+}
+
+.red-historikk-topp h2 { font-size: 17px; margin: 0; }
+
+.red-historikk-id {
+    padding: 0 18px 10px;
+    font-size: 12px;
+    opacity: 0.7;
+    border-bottom: 1px solid #1e293b;
+}
+
+.red-historikk-liste {
+    padding: 12px 18px 18px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.red-versjon {
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #0e1422;
+}
+
+.red-versjon-topp {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-accent, #38bdf8);
+}
+
+.red-versjon-innhold p + p { margin-top: 6px; }
+.red-versjon-innhold ul,
+.red-versjon-innhold ol { padding-left: 20px; margin: 0; }

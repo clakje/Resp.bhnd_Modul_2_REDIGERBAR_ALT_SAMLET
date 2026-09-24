@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scenario ikke lagt inn</title>
+
+    <!-- Plassholderen hører til menyen, ikke til et scenario -->
+    <link rel="stylesheet" href="../../meny.css">
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="brand-section">
+            <a href="../../index.html" class="btn-header btn-main-menu" title="Gå tilbake til hovedmenyen">
+                <span aria-hidden="true">←</span> <span>Hovedmeny</span>
+            </a>
+            <span class="logo-badge">NIV</span>
+            <h1 class="brand-title" id="scenarioTittel">Scenario</h1>
+        </div>
+    </header>
+
+    <main class="plassholder-innhold">
+        <div class="plassholder-boks">
+            <span class="kort-tema" id="scenarioTema"></span>
+            <h2 id="plassholderOverskrift">Ukjent scenario</h2>
+            <p id="plassholderTekst">Dette scenariet er ikke lagt inn ennå.</p>
+        </div>
+    </main>
+
+    <script src="../../meny-data.js"></script>
+    <script>
+        // Leser ?id= fra adressen og henter tittelen fra meny-data.js
+        (function () {
+            'use strict';
+            var data = window.MENY_DATA || { scenarier: [] };
+            var id = new URLSearchParams(window.location.search).get('id');
+            var s = data.scenarier.filter(function (x) { return x.id === id; })[0];
+
+            if (data.plassholderTekst) {
+                document.getElementById('plassholderTekst').textContent = data.plassholderTekst;
+            }
+            if (s) {
+                document.title = s.tittel;
+                document.getElementById('scenarioTittel').textContent = s.tittel;
+                document.getElementById('scenarioTema').textContent = s.tema;
+                document.getElementById('plassholderOverskrift').textContent = s.tittel;
+            }
+
+            // Rise: meld kodeblokken fullført
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ type: 'complete' }, '*');
+                }
+            } catch (e) { /* ikke innebygd */ }
+        })();
+    </script>
+</body>
+</html>
