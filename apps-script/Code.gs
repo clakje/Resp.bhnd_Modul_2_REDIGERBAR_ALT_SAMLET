@@ -93,6 +93,67 @@ function doPost(e) {
   }
 }
 
+// ---------------------------------------------------------------- Flytting fra den gamle koden
+
+/**
+ * Kjøres for hånd én gang (velg flyttGamleEndringer øverst i Apps Script og trykk Kjør).
+ *
+ * Den gamle koden lagret hele forespørselen som én rad, med endringene som tekst i
+ * kolonnen «endringer»: {id=…, innhold=…, grunnlag=…}. Denne funksjonen leser slike
+ * rader i de andre fanene og legger dem inn i «Tekster». Tekst-id-er som allerede
+ * finnes i «Tekster» hoppes over, så funksjonen kan trygt kjøres flere ganger.
+ */
+function flyttGamleEndringer() {
+  const ark = hentArk_();
+  const finnes = nyesteTekster_(ark);
+  const nye = [];
+  const hoppetOver = new Set();
+
+  ark.getParent().getSheets().forEach(gammel => {
+    if (gammel.getName() === ARK_NAVN || gammel.getLastRow() < 2) return;
+    const verdier = gammel.getDataRange().getValues();
+    const topp = verdier[0].map(v => String(v).trim().toLowerCase());
+    const kEndringer = topp.indexOf('endringer');
+    if (kEndringer < 0) return;
+    const kNavn = topp.indexOf('navn');
+    const kSide = topp.indexOf('side');
+    const kTid = topp.findIndex(t => /tid|dato|time|stamp/.test(t));
+
+    verdier.slice(1).forEach(rad => {
+      const tid = kTid >= 0 && rad[kTid] instanceof Date ? rad[kTid] : new Date();
+      const navn = kNavn >= 0 ? String(rad[kNavn]).trim() : '';
+      const side = kSide >= 0 ? String(rad[kSide]).trim() : '';
+      lesGamleEndringer_(rad[kEndringer]).forEach(en => {
+        if (finnes[en.id]) { hoppetOver.add(en.id); return; }
+        nye.push([tid, navn || 'ukjent', side, en.id, somTekst_(en.innhold)]);
+      });
+    });
+  });
+
+  // Eldste først, så den nyeste versjonen av hver tekst havner nederst og blir gjeldende
+  nye.sort((a, b) => a[0] - b[0]);
+  if (nye.length) ark.getRange(ark.getLastRow() + 1, 1, nye.length, KOLONNER.length).setValues(nye);
+  Logger.log(nye.length + ' endringer flyttet til «' + ARK_NAVN + '».' +
+    (hoppetOver.size ? ' Hoppet over (finnes allerede): ' + Array.from(hoppetOver).join(', ') : ''));
+}
+
+// Godtar både JSON og tekstformen Apps Script lager av objekter: [{id=…, innhold=…, grunnlag=…}, …]
+function lesGamleEndringer_(celle) {
+  const tekst = String(celle || '').trim();
+  if (!tekst) return [];
+  try {
+    const json = JSON.parse(tekst);
+    return (Array.isArray(json) ? json : [json])
+      .filter(en => en && GYLDIG_ID.test(String(en.id)))
+      .map(en => ({ id: String(en.id), innhold: String(en.innhold == null ? '' : en.innhold) }));
+  } catch (e) { /* ikke JSON */ }
+  const ut = [];
+  const monster = /\{id=([A-Za-z0-9._-]{1,120}), innhold=([\s\S]*?), grunnlag=[^{}]*?\}(?=\s*(?:,\s*\{id=|\]|$))/g;
+  let treff;
+  while ((treff = monster.exec(tekst))) ut.push({ id: treff[1], innhold: treff[2] });
+  return ut;
+}
+
 // ---------------------------------------------------------------- Hjelpere
 
 function hentArk_() {

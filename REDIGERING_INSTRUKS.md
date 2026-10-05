@@ -46,6 +46,20 @@ rørt.
 > Får du en **ny** URL (fordi du valgte «Ny implementering» i stedet for å redigere den gamle), må
 > den limes inn i `APPS_SCRIPT_URL` øverst i [felles/redigering.js](felles/redigering.js).
 
+### Endringene havner i arket, men vises ikke på siden
+
+Da kjører nettappen fortsatt den gamle koden. Det skjer hvis koden er lagret, men ikke publisert
+som **Ny versjon** (punkt 7 over). Slik ser du det: åpne nettapp-URL-en i nettleseren. Står det
+`tekstboks_1`, `navn` eller `endringer` i svaret, er det den gamle koden. Siden viser da
+«Apps Script kjører en eldre versjon av Code.gs», og redigering er slått av.
+
+Gjør punkt 7 på nytt. Endringer som ble lagret med den gamle koden, flyttes slik til fanen **Tekster**:
+
+1. I Apps Script velger du funksjonen **flyttGamleEndringer** i nedtrekksmenyen øverst, og trykker **Kjør**.
+2. Åpne **Utførelseslogg**. Der står det hvor mange endringer som ble flyttet.
+
+Funksjonen endrer ikke de gamle fanene og kan kjøres flere ganger uten at noe dobles.
+
 ---
 
 ## Steg 2: Publiser redigeringsversjonen på GitHub Pages

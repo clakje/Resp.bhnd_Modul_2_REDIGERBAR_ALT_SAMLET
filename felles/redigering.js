@@ -169,8 +169,18 @@
         }
     }
 
+    // Den gamle Apps Script-koden svarer også med success: true, men i et annet format.
+    // Uten denne sjekken ser det ut som lagringen virker, mens tekstene aldri vises.
+    const GAMMEL_KODE = 'Apps Script kjører en eldre versjon av Code.gs. Publiser den nye koden som ny versjon ' +
+        '(se REDIGERING_INSTRUKS.md, steg 1)';
+
     function hentTekster() {
-        return hentJson(APPS_SCRIPT_URL + '?t=' + Date.now()).then(json => json.data || {});
+        return hentJson(APPS_SCRIPT_URL + '?t=' + Date.now()).then(json => {
+            const data = json.data || {};
+            const gyldig = Object.keys(data).every(id => data[id] && typeof data[id] === 'object' && 'innhold' in data[id]);
+            if (!gyldig) throw new Error(GAMMEL_KODE);
+            return data;
+        });
     }
 
     function hentHistorikk(id) {
@@ -184,6 +194,9 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ navn: navn, side: SIDE, endringer: endringer })
+        }).then(json => {
+            if (typeof json.lagret !== 'number') throw new Error(GAMMEL_KODE);
+            return json;
         });
     }
 

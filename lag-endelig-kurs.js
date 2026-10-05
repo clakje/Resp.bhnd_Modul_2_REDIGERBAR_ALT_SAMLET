@@ -69,6 +69,11 @@ async function main() {
 
     const data = json.data || {};
     const ider = Object.keys(data).sort();
+    const ugyldige = ider.filter(id => !data[id] || typeof data[id] !== 'object' || !('innhold' in data[id]));
+    if (ugyldige.length) {
+        feil('Apps Script kjører en eldre versjon av Code.gs (svaret har feltene ' + ugyldige.join(', ') + ').\n'
+            + 'Publiser apps-script/Code.gs som ny versjon av implementeringen (REDIGERING_INSTRUKS.md, steg 1), og kjør skriptet på nytt.');
+    }
     const tekster = {};
     for (const id of ider) tekster[id] = data[id].innhold;
 
