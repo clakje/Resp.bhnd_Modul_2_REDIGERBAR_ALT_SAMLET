@@ -231,7 +231,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const fasitBody = document.getElementById('fasitBody');
     const btnCloseFasit = document.getElementById('btnCloseFasit');
 
-    const alarmBanner = document.getElementById('alarmBanner');
+    const btnAlarm = document.getElementById('btnAlarm');
+    const alarmCount = document.getElementById('alarmCount');
+    const alarmPanel = document.getElementById('alarmPanel');
     const alarmList = document.getElementById('alarmList');
     const checkShowTrueCurves = document.getElementById('checkShowTrueCurves');
     const btnShowPes = document.getElementById('btnShowPes');
@@ -804,6 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', e => {
         if (e.key !== 'Escape') return;
         if (isPcNoticeOpen()) return;
+        if (isAlarmPanelOpen()) { closeAlarmPanel(); btnAlarm.focus(); return; }
         if (isInfoOpen()) {
             if (!infoImageView.classList.contains('hidden')) { showInfoText(); btnShowInfoImage.focus(); }
             else if (!infoLegendView.classList.contains('hidden')) { showInfoText(); btnShowInfoLegend.focus(); }
@@ -828,23 +831,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const m = simulator.state.measured;
         const activeAlarms = simulator.state.activeAlarms || [];
 
-        if (alarmBanner && alarmList) {
-            if (activeAlarms.length > 0) {
-                alarmBanner.classList.remove('hidden');
-                alarmList.innerHTML = activeAlarms.map(a => `
-                    <div class="alarm-item alarm-type-${a.type}">
-                        <span class="alarm-icon">${a.type === 'danger' ? '🚨' : '⚠️'}</span>
-                        <div class="alarm-text-block">
-                            <span class="alarm-title">${a.title}</span>
-                            <span class="alarm-msg">${a.msg}</span>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                alarmBanner.classList.add('hidden');
-                alarmList.innerHTML = '';
-            }
-        }
+        updateAlarm(activeAlarms);
 
         if (valPpeak) valPpeak.textContent = m.ppeak.toFixed(1);
         if (valVt) valVt.textContent = m.vt;
@@ -859,6 +846,63 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cardMetricRR) cardMetricRR.classList.toggle('metric-alarm-active', hasApnea || has('high_rr') || has('low_rr'));
 
         updateSync();
+    }
+
+    /**
+     * Alarmknappen i verktøylinjen vises bare mens minst én alarm er aktiv, og
+     * blinker rolig til panelet med årsaken åpnes. Fargen følger den alvorligste
+     * alarmen. Når alarmene går over, skjules både knappen og panelet.
+     */
+    function updateAlarm(activeAlarms) {
+        if (!btnAlarm || !alarmList) return;
+        if (!activeAlarms.length) {
+            btnAlarm.classList.add('hidden');
+            closeAlarmPanel();
+            alarmList.innerHTML = '';
+            return;
+        }
+
+        const danger = activeAlarms.some(a => a.type === 'danger');
+        btnAlarm.classList.remove('hidden');
+        btnAlarm.classList.toggle('alarm-danger', danger);
+        alarmCount.textContent = activeAlarms.length;
+        alarmCount.classList.toggle('hidden', activeAlarms.length < 2);
+        btnAlarm.setAttribute('aria-label', `Alarm: ${activeAlarms.map(a => a.title).join(', ')}. Vis årsak.`);
+
+        // Bygg lista bare når teksten endrer seg, så panelet ikke flimrer
+        const html = activeAlarms.map(a => `
+            <div class="alarm-item alarm-type-${a.type}">
+                <span class="alarm-icon" aria-hidden="true">${a.type === 'danger' ? '🚨' : '⚠️'}</span>
+                <div class="alarm-text-block">
+                    <span class="alarm-title">${a.title}</span>
+                    <span class="alarm-msg">${a.msg}</span>
+                </div>
+            </div>
+        `).join('');
+        if (alarmList.dataset.html !== html) {
+            alarmList.innerHTML = html;
+            alarmList.dataset.html = html;
+        }
+    }
+
+    function isAlarmPanelOpen() { return !!alarmPanel && !alarmPanel.classList.contains('hidden'); }
+
+    function closeAlarmPanel() {
+        if (!alarmPanel) return;
+        alarmPanel.classList.add('hidden');
+        btnAlarm.setAttribute('aria-expanded', 'false');
+    }
+
+    if (btnAlarm && alarmPanel) {
+        btnAlarm.addEventListener('click', () => {
+            if (isAlarmPanelOpen()) { closeAlarmPanel(); return; }
+            alarmPanel.classList.remove('hidden');
+            btnAlarm.setAttribute('aria-expanded', 'true');
+        });
+        // Klikk utenfor knappen og panelet lukker panelet
+        document.addEventListener('click', e => {
+            if (isAlarmPanelOpen() && !btnAlarm.contains(e.target) && !alarmPanel.contains(e.target)) closeAlarmPanel();
+        });
     }
 
     /**
@@ -911,8 +955,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Pes-sporet (muskelinnsats) vises fra start: mislykkede pustforsøk ses
-    // tydeligst der. Knappen skjuler og viser det.
+    // Pes-sporet (muskelinnsats) er skjult ved start; deltakerne slår det på
+    // selv med knappen ved behov.
     function setPesTrack(on) {
         renderer.showPesTrack = on;
         btnShowPes.setAttribute('aria-pressed', String(on));
@@ -1115,7 +1159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Tegn tomme kurver umiddelbart, og last så scenariet.
     renderer.initCanvas();
-    setPesTrack(true);
+    setPesTrack(false);
     updateModeBadge();
     bootstrap();
     notifyComplete();

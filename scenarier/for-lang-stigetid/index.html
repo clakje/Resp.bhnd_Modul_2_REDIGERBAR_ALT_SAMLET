@@ -56,11 +56,6 @@
         <section class="monitor-row" aria-label="Ventilatormonitor">
 
             <div class="monitor-left-col">
-                <!-- Medisinsk Alarm-banner -->
-                <div id="alarmBanner" class="alarm-banner hidden" role="alert">
-                    <div id="alarmList" class="alarm-list"></div>
-                </div>
-
                 <!-- Monitor-verktøylinje (kun visningsvalg, ingen respiratorinnstillinger) -->
                 <div class="monitor-toolbar">
                     <button type="button" id="btnShowInfo" class="btn-info" title="Vis informasjon om scenariet" aria-haspopup="dialog" aria-controls="infoOverlay">
@@ -71,6 +66,18 @@
                         <span class="btn-pes-dot" aria-hidden="true"></span>
                         <span id="btnShowPesText">Vis muskelinnsats (P<sub>es</sub>)</span>
                     </button>
+
+                    <!-- Alarm: knappen vises bare når en alarmgrense er nådd, og åpner årsaken -->
+                    <div class="alarm-wrap">
+                        <button type="button" id="btnAlarm" class="btn-alarm hidden" aria-expanded="false" aria-controls="alarmPanel" title="Vis hvorfor alarmen er utløst">
+                            <span class="btn-alarm-icon" aria-hidden="true">!</span>
+                            <span>Alarm</span>
+                            <span id="alarmCount" class="btn-alarm-count hidden"></span>
+                        </button>
+                        <div id="alarmPanel" class="alarm-panel hidden" role="region" aria-label="Aktive alarmer">
+                            <div id="alarmList" class="alarm-list"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Canvas med kurvene (Paw, Flow, Volum, Pes) -->

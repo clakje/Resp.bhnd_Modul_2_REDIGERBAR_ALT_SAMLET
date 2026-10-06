@@ -208,8 +208,16 @@ canvas#waveformCanvas {
     gap: 8px;
 }
 
-.side-panel .control-card { padding: 10px 12px; gap: 6px; }
-.side-panel .slider-wrapper { margin-top: 0; }
+.side-panel .control-card,
+.alarm-controls .control-card { padding: 10px 12px; gap: 6px; }
+.side-panel .slider-wrapper,
+.alarm-controls .slider-wrapper { margin-top: 0; }
+
+/* Alarmgrensene under kurvene: så mange kolonner som får plass */
+.alarm-controls.hidden { display: none; }
+.alarm-controls .control-grid {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
 
 /* Større −/+ og glidebryter, lettere å treffe med mus */
 .step-btn {

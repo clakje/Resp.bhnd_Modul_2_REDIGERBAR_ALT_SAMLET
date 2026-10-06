@@ -90,46 +90,162 @@ window.SCENARIO_DATA = {
   },
   "uiConfig": {
     "visibleControls": [
-      "gender",
-      "kobleTiNeural",
-      "airwayOpening"
+      "ipap",
+      "epap",
+      "cycling",
+      "trigger",
+      "riseTime",
+      "fio2",
+      "apneaDelay",
+      "alarmLeak",
+      "alarmLowVt",
+      "alarmHighVt",
+      "alarmLowRr",
+      "alarmHighRr",
+      "alarmHighPpeak"
     ],
     "controls": [
       {
-        "key": "gender",
-        "group": "patient",
-        "label": "Biologisk kjønn",
-        "type": "buttons",
-        "unit": null,
-        "default": "male",
-        "options": [
-          {
-            "value": "male",
-            "label": "Mann"
-          },
-          {
-            "value": "female",
-            "label": "Kvinne"
-          }
-        ]
-      },
-      {
-        "key": "kobleTiNeural",
-        "group": "patient",
-        "label": "Utled innsatsform fra Ti_neural",
-        "type": "checkbox",
-        "unit": null,
-        "default": false
-      },
-      {
-        "key": "airwayOpening",
-        "group": "patient",
-        "label": "Åpningstrykk luftvei",
+        "key": "ipap",
+        "group": "machine",
+        "label": "IPAP / inspiratorisk trykk",
         "type": "range",
         "unit": "cmH₂O",
+        "default": 10,
+        "min": 8,
+        "max": 30,
+        "step": 1
+      },
+      {
+        "key": "epap",
+        "group": "machine",
+        "label": "EPAP / PEEP",
+        "type": "range",
+        "unit": "cmH₂O",
+        "default": 5,
+        "min": 3,
+        "max": 15,
+        "step": 1
+      },
+      {
+        "key": "cycling",
+        "group": "machine",
+        "label": "Inspiratorisk avslutning (cycling)",
+        "type": "range",
+        "unit": "%",
+        "default": 25,
+        "min": 5,
+        "max": 90,
+        "step": 5
+      },
+      {
+        "key": "trigger",
+        "group": "machine",
+        "label": "Triggersensitivitet (flow)",
+        "type": "range",
+        "unit": "L/min",
+        "default": 1.5,
+        "min": 1,
+        "max": 5,
+        "step": 0.5
+      },
+      {
+        "key": "riseTime",
+        "group": "machine",
+        "label": "Stigetid",
+        "type": "range",
+        "unit": "ms",
+        "default": 150,
+        "min": 50,
+        "max": 900,
+        "step": 25
+      },
+      {
+        "key": "fio2",
+        "group": "machine",
+        "label": "FiO₂",
+        "type": "range",
+        "unit": "%",
+        "default": 30,
+        "min": 21,
+        "max": 100,
+        "step": 1
+      },
+      {
+        "key": "apneaDelay",
+        "group": "alarms",
+        "label": "Apnétid",
+        "type": "range",
+        "unit": "s",
+        "default": 20,
+        "min": 5,
+        "max": 30,
+        "step": 1
+      },
+      {
+        "key": "alarmLeak",
+        "group": "alarms",
+        "label": "Lekkasje, maks",
+        "type": "range",
+        "unit": "L/min",
+        "default": 40,
+        "min": 10,
+        "max": 60,
+        "step": 5
+      },
+      {
+        "key": "alarmLowVt",
+        "group": "alarms",
+        "label": "Tidalvolum, min",
+        "type": "range",
+        "unit": "ml",
+        "default": 300,
+        "min": 100,
+        "max": 600,
+        "step": 10
+      },
+      {
+        "key": "alarmHighVt",
+        "group": "alarms",
+        "label": "Tidalvolum, maks",
+        "type": "range",
+        "unit": "ml",
+        "default": 800,
+        "min": 300,
+        "max": 1000,
+        "step": 10
+      },
+      {
+        "key": "alarmLowRr",
+        "group": "alarms",
+        "label": "Frekvens, min (0 = av)",
+        "type": "range",
+        "unit": "/min",
         "default": 0,
         "min": 0,
-        "max": 35,
+        "max": 25,
+        "step": 1
+      },
+      {
+        "key": "alarmHighRr",
+        "group": "alarms",
+        "label": "Frekvens, maks",
+        "type": "range",
+        "unit": "/min",
+        "default": 30,
+        "min": 20,
+        "max": 50,
+        "step": 1
+      },
+      {
+        "key": "alarmHighPpeak",
+        "group": "alarms",
+        "label": "Topptrykk, maks",
+        "type": "range",
+        "unit": "cmH₂O",
+        "default": 40,
+        "min": 10,
+        "max": 50,
         "step": 1
       }
     ]

@@ -93,6 +93,7 @@ window.SCENARIO_DATA = {
       "ipap",
       "epap",
       "fio2",
+      "triggerMode",
       "cycling",
       "riseTime"
     ],
@@ -131,9 +132,27 @@ window.SCENARIO_DATA = {
         "step": 1
       },
       {
+        "key": "triggerMode",
+        "group": "machine",
+        "label": "Triggertype",
+        "type": "buttons",
+        "unit": null,
+        "default": "flow",
+        "options": [
+          {
+            "value": "flow",
+            "label": "Flowtrigger"
+          },
+          {
+            "value": "pressure",
+            "label": "Trykktrigger"
+          }
+        ]
+      },
+      {
         "key": "cycling",
         "group": "machine",
-        "label": "Cycling / E-sense",
+        "label": "Inspiratorisk avslutning",
         "type": "range",
         "unit": "%",
         "default": 25,

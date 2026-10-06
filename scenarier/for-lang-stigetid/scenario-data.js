@@ -158,7 +158,7 @@ window.SCENARIO_DATA = {
       {
         "key": "cycling",
         "group": "machine",
-        "label": "Cycling / E-sense",
+        "label": "Inspiratorisk avslutning",
         "type": "range",
         "unit": "%",
         "default": 25,
