@@ -42,6 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // ---------------------------------------------------------------- MASKIN
         mode:            { group: 'machine', read: s => s.settings.mode },
         ipap:            { group: 'machine', read: s => s.settings.ipap },
+        niMode:          { group: 'machine', read: s => s.settings.niMode },           // 'BPAP' eller 'PSV' (modusvelgeren)
+        pressureSupport: { group: 'machine', read: s => s.settings.pressureSupport },  // ΔP over PEEP i trykkstøtte
         epap:            { group: 'machine', read: s => s.settings.epap },
         vcTidalVolume:   { group: 'machine', read: s => s.settings.vcTidalVolume },
         vcPeakFlow:      { group: 'machine', read: s => s.settings.vcPeakFlow },
@@ -132,7 +134,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ---- Maskin
         S.mode = paramState.mode;
+        S.niMode = (paramState.niMode === 'PSV') ? 'PSV' : 'BPAP';
         S.ipap = num('ipap', S.ipap);
+        S.pressureSupport = num('pressureSupport', S.pressureSupport);
         S.epap = num('epap', S.epap);
         S.tiSet = num('tiSet', S.tiSet);
         S.backupRate = num('backupRate', S.backupRate);
@@ -163,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         S.alarmLowRrLimit = num('alarmLowRr', S.alarmLowRrLimit);
         S.alarmHighRrLimit = num('alarmHighRr', S.alarmHighRrLimit);
         S.alarmHighPpeak = num('alarmHighPpeak', S.alarmHighPpeak);
-        S.alarmHighPpeakDelta = S.alarmHighPpeak - S.ipap;
+        S.alarmHighPpeakDelta = S.alarmHighPpeak - simulator.inspiratoryPressure();
 
         // ---- Pasientens lungemekanikk
         P.height = num('height', P.height);
@@ -259,7 +263,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const valMissed = document.getElementById('valMissed');
     const valAsyncIndex = document.getElementById('valAsyncIndex');
 
-    const MODE_LABELS = { PS: 'BPAP', PC: 'PC', VC: 'VC' };
+    // Modusvelgeren i headeren. Gjeldende modus står i paramState.niMode, så den
+    // lastes fra scenariet og nullstilles som alle andre innstillinger.
+    const modeButtons = modeBadge ? Array.from(modeBadge.querySelectorAll('[data-mode]')) : [];
+
+    // Slidere som endrer seg i trykkstøtte: IPAP blir ΔP, og EPAP heter bare PEEP.
+    // Kan overstyres per scenario med "modes": { "PSV": { ... } } på kontrollen i scenario.json.
+    const PSV_SPECS = {
+        ipap: { label: 'Trykkstøtte (ΔP)', min: 0, max: 25, step: 1, default: 5 },
+        epap: { label: 'PEEP' }
+    };
 
     function escapeHtml(s) {
         return String(s == null ? '' : s)
@@ -277,8 +290,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateModeBadge() {
-        if (modeBadge) modeBadge.innerHTML = `<span>Modus: ${MODE_LABELS[simulator.settings.mode] || simulator.settings.mode}</span>`;
+        modeButtons.forEach(b => {
+            const on = b.dataset.mode === simulator.settings.niMode;
+            b.classList.toggle('active', on);
+            b.setAttribute('aria-pressed', String(on));
+        });
     }
+
+    /**
+     * Bytter mellom BPAP og trykkstøtte. Det leverte trykket beholdes ved bytte
+     * (IPAP = PEEP + ΔP), så kurvene ikke hopper. Forskjellen viser seg først
+     * når PEEP endres: i BPAP står IPAP fast, i trykkstøtte flytter ΔP med.
+     */
+    function setMode(mode) {
+        if (mode === paramState.niMode) return;
+        if (mode === 'PSV') paramState.pressureSupport = Math.max(0, num('ipap', 10) - num('epap', 5));
+        else paramState.ipap = num('epap', 5) + num('pressureSupport', 5);
+        paramState.niMode = mode;
+
+        Object.keys(PSV_SPECS).forEach(key => {
+            const card = controlsContainer.querySelector(`.control-card[data-key="${key}"]`);
+            if (card && card.__applyMode) card.__applyMode();
+        });
+        commit();
+    }
+    modeButtons.forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
 
     // =========================================================================
     // 4. LASTING AV SCENARIO
@@ -313,6 +349,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 paramState[key] = group[key];
             }
         });
+
+        // Oppgir ikke scenariet egen trykkstøtte, tilsvarer ΔP det IPAP gir over PEEP.
+        const machine = initialState.machine || {};
+        if (!Object.prototype.hasOwnProperty.call(machine, 'pressureSupport')) {
+            paramState.pressureSupport = Math.max(0, num('ipap', 10) - num('epap', 5));
+        }
 
         commit();
         initialParamState = Object.assign({}, paramState);
@@ -523,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.min = String(min);
                 input.max = String(max);
                 input.step = String(step);
-                input.value = String(clamp(toNumber(paramState[key], spec.default), min, max));
+                input.value = String(clamp(toNumber(paramState[valueKeyFor(key)], spec.default), min, max));
                 limits.innerHTML = `<span>${min}${escapeHtml(rangeUnit)}</span><span>${max}${escapeHtml(rangeUnit)}</span>`;
             };
             configure();
@@ -535,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const apply = () => {
-                paramState[key] = parseFloat(input.value);
+                paramState[valueKeyFor(key)] = parseFloat(input.value);
                 setPill();
                 commit();
             };
@@ -561,6 +603,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 setPill();
             };
             if (def.modes) card.__applyMode = () => { configure(); setPill(); };
+            // IPAP- og EPAP-slideren ved modusbytte: ny etikett og grenser, og verdien holdes innenfor dem.
+            if (PSV_SPECS[key]) {
+                card.__applyMode = () => {
+                    configure();
+                    paramState[valueKeyFor(key)] = parseFloat(input.value);
+                    setPill();
+                };
+            }
 
         } else if (def.type === 'checkbox') {
             // Avkrysningsboksen bærer selv etiketten: ingen egen tittel eller PÅ/AV-merke.
@@ -691,12 +741,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return hit ? hit.value : raw;
     }
 
+    /** Er IPAP-slideren i trykkstøtte, viser og styrer den ΔP i stedet for IPAP. */
+    function isPressureSupportSlider(key) {
+        return key === 'ipap' && paramState.niMode === 'PSV';
+    }
+
+    /** Hvilken parameter i paramState en kontroll leser og skriver. */
+    function valueKeyFor(key) {
+        return isPressureSupportSlider(key) ? 'pressureSupport' : key;
+    }
+
     /**
-     * Definisjonen en range-kontroll skal bruke nå. Med `modes` (bare for trigger)
+     * Definisjonen en range-kontroll skal bruke nå. Med `modes` på trigger
      * overstyrer oppføringen for gjeldende triggertype etikett, enhet og grenser:
      *   "modes": { "flow": { "unit": "L/min", "min": 1, ... }, "pressure": { ... } }
+     * I trykkstøtte får IPAP- og EPAP-slideren etikett (og grenser) fra PSV_SPECS,
+     * eventuelt overstyrt av def.modes.PSV.
      */
     function rangeSpec(def) {
+        const psv = paramState.niMode === 'PSV' && PSV_SPECS[def.key];
+        if (psv) return Object.assign({}, def, psv, def.modes && def.modes.PSV);
         const variant = def.modes && def.modes[paramState.triggerMode];
         return variant ? Object.assign({}, def, variant) : def;
     }
@@ -727,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const def = findDef(key);
                 if (def && def.enabledKey) card.__setEnabled(paramState[def.enabledKey]);
             }
-            if (card.__setValue) card.__setValue(paramState[key]);
+            if (card.__setValue) card.__setValue(paramState[valueKeyFor(key)]);
         });
         commit();
         simulator.reset();

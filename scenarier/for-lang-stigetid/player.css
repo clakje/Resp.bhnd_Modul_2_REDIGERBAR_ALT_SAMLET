@@ -38,6 +38,12 @@ canvas#waveformCanvas {
 
 .btn-main-menu:hover { border-color: var(--color-accent); }
 
+/* Modusvelgeren i headeren: samme merke som før, med BPAP/Trykkstøtte-knapper inni */
+.mode-switch { padding: 3px 4px 3px 12px; }
+.mode-switch .btn-group-pill { border-radius: 16px; }
+.mode-switch .btn-pill { font-size: 12px; padding: 4px 12px; border-radius: 14px; }
+.mode-switch .btn-pill:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+
 /* ---------------------------------------------------------------- Layout */
 /* Kurvene til venstre, sidepanel (måleverdier + innstillinger) til høyre, så
    deltakeren ser effekten av en endring uten å rulle. Spilleren er laget for

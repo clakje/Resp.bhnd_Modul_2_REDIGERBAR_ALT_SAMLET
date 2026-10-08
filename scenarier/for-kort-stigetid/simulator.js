@@ -347,6 +347,8 @@ class VentilatorSimulator {
         this.settings = {
             mode: 'PS',             // 'PS' (trykkstøtte, standard), 'PC' (trykkontroll) eller 'VC' (volumkontroll)
             ipap: 8,                // cmH2O (Inspiratory Positive Airway Pressure / PC over PEEP)
+            niMode: 'BPAP',         // 'BPAP' (IPAP er absolutt trykk) eller 'PSV' (trykkstøtte over PEEP)
+            pressureSupport: 3,     // cmH2O - Trykkstøtte (ΔP over PEEP), brukes bare når niMode = 'PSV'
 
             // FASE 6 (6.1): Volumkontroll (VC)
             vcTidalVolume: 500,        // ml - Innstilt tidevolum som skal leveres
@@ -440,7 +442,7 @@ class VentilatorSimulator {
         const C_L = this.patient.compliance / 1000;
         const initLeak = (this.settings.leak / 60) * Math.sqrt(this.settings.epap / 10);
         const initIbw = this.getPatientIBW();
-        const initDrivingP = this.settings.ipap - this.settings.epap;
+        const initDrivingP = this.inspiratoryPressure() - this.settings.epap;
         const initTheoVt = Math.round(this.patient.compliance * initDrivingP);
         const initRr = (this.settings.mode === 'PC') ? this.settings.rr : (this.patientDrive.rrSpont || this.settings.backupRate || 12);
         const initMv = parseFloat(((initTheoVt * initRr) / 1000).toFixed(2));
@@ -483,8 +485,8 @@ class VentilatorSimulator {
             visPeakTriggerFlow: 0.0,      // L/s - toppholdt triggerflow for visning
             peakQmeas: 0.0,               // L/s - Toppflow av Q_meas i pågående innpust
             pawMaxInBreath: this.settings.epap, // cmH2O - Maksimalt trykk i innpustet (C5 PIP)
-            lastPip: this.settings.ipap,  // cmH2O - Siste fullførte innpusts PIP (C5)
-            lastPplat: this.settings.ipap,// cmH2O - Siste fullførte innpusts Pplat (C5)
+            lastPip: this.inspiratoryPressure(),  // cmH2O - Siste fullførte innpusts PIP (C5)
+            lastPplat: this.inspiratoryPressure(),// cmH2O - Siste fullførte innpusts Pplat (C5)
             lastTi: initTi,               // s - Siste målte inspirasjonstid
             lastTe: parseFloat(initTe.toFixed(1)), // s - Siste målte ekspirasjonstid (C6)
             lastCycleReason: 'flow',      // 'flow' eller 'tiMax'
@@ -523,8 +525,8 @@ class VentilatorSimulator {
                 vti: initTheoVt,          // ml - VTI (glattet over 3 pust)
                 vte: initTheoVt,          // ml - VTE (glattet over 3 pust)
                 mv: initMv,               // L/min - middel(VTE siste 60s) * RRtot / 1000 (C1)
-                ppeak: this.settings.ipap,// cmH2O - PIP (glattet over 3 pust) (C5)
-                pplat: this.settings.ipap,// cmH2O - Pplat siste 100ms før cycling (glattet) (C5)
+                ppeak: this.inspiratoryPressure(),// cmH2O - PIP (glattet over 3 pust) (C5)
+                pplat: this.inspiratoryPressure(),// cmH2O - Pplat siste 100ms før cycling (glattet) (C5)
                 rrTotal: initRr,          // pust/min - faktiske leverte pust i siste 60s (C1)
                 rrSpont: this.patientDrive.rrSpont, // pust/min - pasientutløste pust i siste 60s (C1)
                 spontPercent: (this.patientDrive.rrSpont > 0) ? 100 : 0, // % - andel spontane pust i siste 60s (C1)
@@ -571,6 +573,24 @@ class VentilatorSimulator {
             volLungLast: 0
         };
         this.frameEvents = [];
+    }
+
+    /**
+     * Måltrykket i inspirasjonen (absolutt, cmH2O). All logikk som trenger
+     * inspirasjonstrykket — servoens P_target, blåserens takhøyde, driving
+     * pressure og startverdiene — henter det herfra.
+     *
+     *   BPAP:        IPAP stilles inn som absolutt trykk.
+     *   Trykkstøtte: trykkstøtten (ΔP) legges oppå PEEP, så hele kurven
+     *                flyttes opp eller ned når PEEP endres.
+     *
+     * @returns {number} Inspiratorisk måltrykk (cmH2O)
+     */
+    inspiratoryPressure() {
+        if (this.settings.niMode === 'PSV') {
+            return this.settings.epap + Math.max(0, this.settings.pressureSupport);
+        }
+        return this.settings.ipap;
     }
 
     /**
@@ -726,7 +746,7 @@ class VentilatorSimulator {
         const C_L = this.patient.compliance / 1000;
         const initLeak = (this.settings.leak / 60) * Math.sqrt(this.settings.epap / 10);
         const initIbw = this.getPatientIBW();
-        const initDrivingP = this.settings.ipap - this.settings.epap;
+        const initDrivingP = this.inspiratoryPressure() - this.settings.epap;
         const initTheoVt = Math.round(this.patient.compliance * initDrivingP);
         const initRr = (this.settings.mode === 'PC') ? this.settings.rr : (this.patientDrive.rrSpont || this.settings.backupRate || 12);
         const initMv = parseFloat(((initTheoVt * initRr) / 1000).toFixed(2));
@@ -791,8 +811,8 @@ class VentilatorSimulator {
         this.state.visPeakTriggerFlow = 0.0;
         this.state.peakQmeas = 0.0;
         this.state.pawMaxInBreath = this.settings.epap;
-        this.state.lastPip = this.settings.ipap;
-        this.state.lastPplat = this.settings.ipap;
+        this.state.lastPip = this.inspiratoryPressure();
+        this.state.lastPplat = this.inspiratoryPressure();
         this.state.lastTi = initTi;
         this.state.lastTe = parseFloat(initTe.toFixed(1));
         this.state.lastCycleReason = 'flow';
@@ -824,8 +844,8 @@ class VentilatorSimulator {
         this.state.measured.vti = initTheoVt;
         this.state.measured.vte = initTheoVt;
         this.state.measured.mv = initMv;
-        this.state.measured.ppeak = this.settings.ipap;
-        this.state.measured.pplat = this.settings.ipap;
+        this.state.measured.ppeak = this.inspiratoryPressure();
+        this.state.measured.pplat = this.inspiratoryPressure();
         this.state.measured.rrTotal = initRr;
         this.state.measured.rrSpont = this.patientDrive.rrSpont;
         this.state.measured.spontPercent = (this.patientDrive.rrSpont > 0) ? 100 : 0;
@@ -1095,7 +1115,7 @@ class VentilatorSimulator {
         const R_exp = this.patient.resistance * expRatio + R_valve; // A6
 
         // 1. Pasientens autonome respirasjonssenter (A3, 5.2)
-        const currentSupport = Math.max(0, this.settings.ipap - this.settings.epap);
+        const currentSupport = Math.max(0, this.inspiratoryPressure() - this.settings.epap);
         this.patientDrive.step(dt, this.state.totalTime, this.state.efforts, currentSupport);
         this.state.P_mus = this.patientDrive.P_mus;
 
@@ -1177,7 +1197,7 @@ class VentilatorSimulator {
                         }
                     }
                     this._startInspiration();
-                    P_target = this.settings.ipap;
+                    P_target = this.inspiratoryPressure();
                 }
             }
 
@@ -1281,14 +1301,14 @@ class VentilatorSimulator {
                             this._expHoldTimer = 0.0;
                         } else {
                             this._startInspiration();
-                            P_target = this.settings.ipap;
+                            P_target = this.inspiratoryPressure();
                         }
                     }
                 }
             }
 
         } else if (this.state.phase === 'inspiration') {
-            P_target = this.settings.ipap;
+            P_target = this.inspiratoryPressure();
 
             // Målt flow i inspirasjon (lekkasjekorrigert) (A5, A7)
             const Q_meas = this.state.Q_total - this.state.Q_leak_estimert;
@@ -1437,7 +1457,7 @@ class VentilatorSimulator {
         this.state.I_servo = kompensasjon; // Beholder feltet for kompatibilitet
         let P_out = this.state.P_servo + kompensasjon;
         // Blåserens takhøyde: maks ipap + 12 cmH₂O
-        P_out = Math.min(P_out, this.settings.ipap + 12);
+        P_out = Math.min(P_out, this.inspiratoryPressure() + 12);
 
         // Steg 3 — Masketrykket P_aw, løst algebraisk med A6 & A7 (6.2: ikke-lineær P/V)
         const P_el = this._pElastic(this._elasticVolume());
@@ -1945,7 +1965,7 @@ class VentilatorSimulator {
         const R_exp = R_insp * expRatio + R_valve;
         const tauInsp = (C * R_insp) / 1000; // Inspiratorisk tidskonstant: Tau = C * R
         const tauExp = (C * R_exp) / 1000;   // Ekspiratorisk tidskonstant
-        const drivingPressure = this.settings.ipap - this.settings.epap;
+        const drivingPressure = this.inspiratoryPressure() - this.settings.epap;
         const peepi = this.state.PEEPi || 0;
         const erVolumkontroll = (this.settings.mode === 'VC');
         // 6.1: I volumkontroll er tidevolumet innstilt, ikke et resultat av drivtrykket.

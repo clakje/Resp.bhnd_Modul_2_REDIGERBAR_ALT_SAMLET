@@ -31,8 +31,13 @@
         </div>
 
         <div class="status-badge-container">
-            <div class="mode-badge" id="modeBadge">
-                <span>Modus: BPAP</span>
+            <!-- Modusvelger: BPAP (IPAP absolutt) eller Trykkstøtte (ΔP over PEEP). Styres av app.js -->
+            <div class="mode-badge mode-switch" id="modeBadge" role="group" aria-label="Ventilasjonsmodus">
+                <span>Modus:</span>
+                <div class="btn-group-pill">
+                    <button type="button" class="btn-pill active" data-mode="BPAP" aria-pressed="true">BPAP</button>
+                    <button type="button" class="btn-pill" data-mode="PSV" aria-pressed="false">Trykkstøtte</button>
+                </div>
             </div>
         </div>
 
