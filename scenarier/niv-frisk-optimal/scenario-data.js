@@ -196,7 +196,7 @@ window.SCENARIO_DATA = {
       {
         "key": "alarmLowVt",
         "group": "alarms",
-        "label": "Tidalvolum, min",
+        "label": "Tidevolum, min",
         "type": "range",
         "unit": "ml",
         "default": 300,
@@ -207,7 +207,7 @@ window.SCENARIO_DATA = {
       {
         "key": "alarmHighVt",
         "group": "alarms",
-        "label": "Tidalvolum, maks",
+        "label": "Tidevolum, maks",
         "type": "range",
         "unit": "ml",
         "default": 800,
