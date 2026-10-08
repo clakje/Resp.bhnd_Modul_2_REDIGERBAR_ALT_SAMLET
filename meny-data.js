@@ -45,7 +45,7 @@ window.MENY_DATA = {
         { overskrift: 'Velg et scenario', tekst: 'Klikk på et kort i hovedmenyen. Scenariet åpnes her i vinduet.' },
         { overskrift: 'Les kurvene', tekst: 'Øverst ser du luftveistrykk (Paw), flow og volum. Knappen «Vis muskelinnsats (Pes)» viser i tillegg pasientens egen pusteinnsats.' },
         { overskrift: 'Les måleverdiene', tekst: 'Til høyre ser du måleverdier og en vurdering av samspillet mellom pasient og respirator.' },
-        { overskrift: 'Juster innstillingene', tekst: 'Under «Innstillinger du kan endre» justerer du parameterne i scenariet. Endringen vises i kurvene etter noen pust.' },
+        { overskrift: 'Juster innstillingene', tekst: 'Under «Respiratorinnstillinger» justerer du parameterne i scenariet. Endringen vises i kurvene etter noen pust.' },
         { overskrift: 'Info', tekst: 'Knappen «Info» forteller hva scenariet handler om, og gir deg fasit når du er klar.' },
         { overskrift: 'Pause / Frys og Nullstill', tekst: 'Pause / Frys stopper kurvene så du kan studere dem. Nullstill setter scenariet tilbake til start.' },
         { overskrift: 'Hovedmeny', tekst: 'Knappen «Hovedmeny» øverst til venstre tar deg tilbake hit, så du kan velge et nytt scenario.' },

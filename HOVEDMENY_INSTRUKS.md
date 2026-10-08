@@ -219,7 +219,7 @@ gjennom mappene rekursivt:
 >
 > **Les måleverdiene:** Til høyre ser du måleverdier og en vurdering av samspillet mellom pasient og respirator.
 >
-> **Juster innstillingene:** Under «Innstillinger du kan endre» justerer du parameterne i
+> **Juster innstillingene:** Under «Respiratorinnstillinger» justerer du parameterne i
 > scenariet. Endringen vises i kurvene etter noen pust.
 >
 > **Info:** Knappen «Info» forteller hva scenariet handler om, og gir deg fasit når du er klar.
