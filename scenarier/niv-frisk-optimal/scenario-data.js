@@ -112,7 +112,7 @@ window.SCENARIO_DATA = {
         "type": "range",
         "unit": "cmH₂O",
         "default": 10,
-        "min": 8,
+        "min": 1,
         "max": 30,
         "step": 1
       },

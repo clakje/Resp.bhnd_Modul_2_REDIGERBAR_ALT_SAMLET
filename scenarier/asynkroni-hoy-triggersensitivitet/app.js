@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setMode(mode) {
         if (mode === paramState.niMode) return;
         if (mode === 'PSV') paramState.pressureSupport = Math.max(0, num('ipap', 10) - num('epap', 5));
-        else paramState.ipap = num('epap', 5) + num('pressureSupport', 5);
+        else paramState.ipap = num('epap', 5) + Math.max(1, num('pressureSupport', 5));
         paramState.niMode = mode;
 
         Object.keys(PSV_SPECS).forEach(key => {
@@ -577,6 +577,12 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const apply = () => {
+                // IPAP kan senkes til 1 cmH₂O over EPAP, og EPAP heves til 1 cmH₂O under IPAP — ikke forbi.
+                // I trykkstøtte er IPAP-slideren ΔP, så da gjelder ikke sperren.
+                if (paramState.niMode !== 'PSV') {
+                    if (key === 'ipap') input.value = String(Math.max(parseFloat(input.value), num('epap', 0) + 1));
+                    if (key === 'epap') input.value = String(Math.min(parseFloat(input.value), num('ipap', Infinity) - 1));
+                }
                 paramState[valueKeyFor(key)] = parseFloat(input.value);
                 setPill();
                 commit();
