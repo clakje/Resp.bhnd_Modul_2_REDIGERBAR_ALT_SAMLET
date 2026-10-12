@@ -94,8 +94,7 @@ window.SCENARIO_DATA = {
       "ipap",
       "epap",
       "fio2",
-      "cycling",
-      "kobleTiNeural"
+      "cycling"
     ],
     "controls": [
       {
@@ -141,14 +140,6 @@ window.SCENARIO_DATA = {
         "min": 5,
         "max": 90,
         "step": 5
-      },
-      {
-        "key": "kobleTiNeural",
-        "group": "patient",
-        "label": "Utled innsatsform fra Ti_neural",
-        "type": "checkbox",
-        "unit": null,
-        "default": false
       }
     ]
   }
