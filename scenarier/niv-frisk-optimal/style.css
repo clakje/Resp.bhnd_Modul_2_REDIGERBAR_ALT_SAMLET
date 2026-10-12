@@ -538,7 +538,7 @@ canvas#waveformCanvas {
 
 .metric-card.pressure-card::before { background-color: var(--color-pressure); }
 .metric-card.volume-card::before { background-color: var(--color-volume); }
-.metric-card.mv-card::before { background-color: var(--color-flow); }
+.metric-card.mv-card::before { background-color: var(--text-main); }
 .metric-card.rr-card::before { background-color: #a855f7; }
 
 .metric-card.metric-alarm-active {
@@ -571,7 +571,7 @@ canvas#waveformCanvas {
 
 .metric-card.pressure-card .metric-value { color: var(--color-pressure); }
 .metric-card.volume-card .metric-value { color: var(--color-volume); }
-.metric-card.mv-card .metric-value { color: var(--color-flow); }
+.metric-card.mv-card .metric-value { color: var(--text-main); }
 .metric-card.rr-card .metric-value { color: #c084fc; }
 
 .metric-card.metric-alarm-active .metric-value {
