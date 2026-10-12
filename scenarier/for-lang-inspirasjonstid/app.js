@@ -112,6 +112,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Verdiene scenariet startet med — brukes av Nullstill-knappen.
     let initialParamState = {};
 
+    // Simulatoren husker én terskel per triggertype. paramState har bare den aktive,
+    // så begge tas vare på her for at Nullstill også skal tilbakestille den andre.
+    let initialTriggerThresholds = null;
+
     function num(key, fallback) {
         const v = parseFloat(paramState[key]);
         return Number.isFinite(v) ? v : fallback;
@@ -354,6 +358,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         commit();
         initialParamState = Object.assign({}, paramState);
+        initialTriggerThresholds = {
+            flow: simulator.settings.triggerFlow,
+            pressure: simulator.settings.triggerPressure
+        };
 
         // ---- 4b. Metadata ------------------------------------------------------
         renderMetadata(meta);
@@ -511,10 +519,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let syncDisabled = () => {};
 
         if (def.type === 'range') {
-            // Etiketten, grensene og hvilken verdi slideren styrer kan avhenge av modus
-            // (IPAP i BPAP, ΔP i trykkstøtte), så de settes i configure(), som kjøres
-            // på nytt når modus byttes.
-            let min, max, step, decimals;
+            // Grensene og enheten kan avhenge av triggertypen (def.modes), så de ligger
+            // i variabler som configure() setter på nytt når typen byttes.
+            let min, max, step, decimals, rangeUnit;
 
             const wrapper = document.createElement('div');
             wrapper.className = 'slider-wrapper';
@@ -547,6 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 max = Number(spec.max != null ? spec.max : 100);
                 step = Number(spec.step != null ? spec.step : 1);
                 decimals = decimalsFor(step);
+                rangeUnit = spec.unit ? ' ' + spec.unit : '';
 
                 const name = spec.label || key;
                 label.textContent = name;
@@ -558,12 +566,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.max = String(max);
                 input.step = String(step);
                 input.value = String(clamp(toNumber(paramState[valueKeyFor(key)], spec.default), min, max));
-                limits.innerHTML = `<span>${min}${escapeHtml(unit)}</span><span>${max}${escapeHtml(unit)}</span>`;
+                limits.innerHTML = `<span>${min}${escapeHtml(rangeUnit)}</span><span>${max}${escapeHtml(rangeUnit)}</span>`;
             };
             configure();
 
             setPill = () => {
-                const text = Number(input.value).toFixed(decimals) + unit;
+                const text = Number(input.value).toFixed(decimals) + rangeUnit;
                 pill.textContent = text;
                 input.setAttribute('aria-valuetext', text);   // skjermleser leser verdien med enhet
             };
@@ -600,12 +608,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.value = String(clamp(toNumber(v, min), min, max));
                 setPill();
             };
-            // Ved modusbytte: ny etikett og nye grenser, og verdien holdes innenfor dem.
-            card.__applyMode = () => {
-                configure();
-                paramState[valueKeyFor(key)] = parseFloat(input.value);
-                setPill();
-            };
+            if (def.modes) card.__applyMode = () => { configure(); setPill(); };
+            // IPAP- og EPAP-slideren ved modusbytte: ny etikett og grenser, og verdien holdes innenfor dem.
+            if (PSV_SPECS[key]) {
+                card.__applyMode = () => {
+                    configure();
+                    paramState[valueKeyFor(key)] = parseFloat(input.value);
+                    setPill();
+                };
+            }
 
         } else if (def.type === 'checkbox') {
             // Avkrysningsboksen bærer selv etiketten: ingen egen tittel eller PÅ/AV-merke.
@@ -651,6 +662,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 select.addEventListener('change', () => {
                     paramState[key] = coerceLike(select.value, options);
                     setPill();
+                    if (key === 'triggerMode') onTriggerModeChanged();
                     commit();
                 });
                 card.__setValue = v => { select.value = String(v); setPill(); };
@@ -672,6 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         paramState[key] = o.value;
                         buttons.forEach(b => b.classList.toggle('active', b === btn));
                         setPill();
+                        if (key === 'triggerMode') onTriggerModeChanged();
                         commit();
                     });
                     buttons.push(btn);
@@ -745,18 +758,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Definisjonen en range-kontroll skal bruke nå. I trykkstøtte får IPAP- og
-     * EPAP-slideren etikett (og grenser) fra PSV_SPECS, eventuelt overstyrt av def.modes.PSV.
+     * Definisjonen en range-kontroll skal bruke nå. Med `modes` på trigger
+     * overstyrer oppføringen for gjeldende triggertype etikett, enhet og grenser:
+     *   "modes": { "flow": { "unit": "L/min", "min": 1, ... }, "pressure": { ... } }
+     * I trykkstøtte får IPAP- og EPAP-slideren etikett (og grenser) fra PSV_SPECS,
+     * eventuelt overstyrt av def.modes.PSV.
      */
     function rangeSpec(def) {
         const psv = paramState.niMode === 'PSV' && PSV_SPECS[def.key];
-        if (!psv) return def;
-        return Object.assign({}, def, psv, def.modes && def.modes.PSV);
+        if (psv) return Object.assign({}, def, psv, def.modes && def.modes.PSV);
+        const variant = def.modes && def.modes[paramState.triggerMode];
+        return variant ? Object.assign({}, def, variant) : def;
+    }
+
+    /**
+     * Triggerfølsomheten betyr L/min ved flowtrigger og cmH₂O ved trykktrigger.
+     * Ved bytte av type hentes den nye typens egen terskel fra simulatoren, som
+     * husker begge, i stedet for å tolke sliderverdien i feil enhet — slik
+     * generatoren gjør det. Må kalles før commit().
+     */
+    function onTriggerModeChanged() {
+        const S = simulator.settings;
+        paramState.trigger = (paramState.triggerMode === 'pressure') ? S.triggerPressure : S.triggerFlow;
+        const card = controlsContainer.querySelector('.control-card[data-key="trigger"]');
+        if (card && card.__applyMode) card.__applyMode();
     }
 
     /** Setter alle kontroller tilbake til scenariets startverdier. */
     function resetToScenario() {
         Object.keys(initialParamState).forEach(k => { paramState[k] = initialParamState[k]; });
+        if (initialTriggerThresholds) {
+            simulator.settings.triggerFlow = initialTriggerThresholds.flow;
+            simulator.settings.triggerPressure = initialTriggerThresholds.pressure;
+        }
         controlsContainer.querySelectorAll('.control-card[data-key]').forEach(card => {
             const key = card.dataset.key;
             if (card.__setEnabled) {

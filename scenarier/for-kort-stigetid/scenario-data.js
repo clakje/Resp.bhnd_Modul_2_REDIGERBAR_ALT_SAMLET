@@ -102,6 +102,7 @@ window.SCENARIO_DATA = {
       "fio2",
       "cycling",
       "triggerMode",
+      "trigger",
       "riseTime"
     ],
     "controls": [
@@ -166,6 +167,33 @@ window.SCENARIO_DATA = {
             "label": "Trykktrigger"
           }
         ]
+      },
+      {
+        "key": "trigger",
+        "group": "machine",
+        "label": "Triggersensitivitet",
+        "type": "range",
+        "unit": "L/min",
+        "default": 1.5,
+        "min": 1,
+        "max": 5,
+        "step": 0.5,
+        "modes": {
+          "flow": {
+            "label": "Triggersensitivitet (flow)",
+            "unit": "L/min",
+            "min": 1,
+            "max": 5,
+            "step": 0.5
+          },
+          "pressure": {
+            "label": "Triggersensitivitet (trykk)",
+            "unit": "cmH₂O",
+            "min": 0.2,
+            "max": 5,
+            "step": 0.1
+          }
+        }
       },
       {
         "key": "riseTime",
