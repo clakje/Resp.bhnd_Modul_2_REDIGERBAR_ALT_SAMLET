@@ -94,8 +94,10 @@ window.SCENARIO_DATA = {
       "ipap",
       "epap",
       "fio2",
+      "cycling",
       "triggerMode",
       "trigger",
+      "riseTime",
       "kobleTiNeural"
     ],
     "controls": [
@@ -131,6 +133,17 @@ window.SCENARIO_DATA = {
         "min": 21,
         "max": 100,
         "step": 1
+      },
+      {
+        "key": "cycling",
+        "group": "machine",
+        "label": "Inspiratorisk avslutning",
+        "type": "range",
+        "unit": "%",
+        "default": 25,
+        "min": 5,
+        "max": 90,
+        "step": 5
       },
       {
         "key": "triggerMode",
@@ -176,6 +189,17 @@ window.SCENARIO_DATA = {
             "step": 0.1
           }
         }
+      },
+      {
+        "key": "riseTime",
+        "group": "machine",
+        "label": "Stigetid (rise time)",
+        "type": "range",
+        "unit": "ms",
+        "default": 150,
+        "min": 50,
+        "max": 900,
+        "step": 25
       },
       {
         "key": "kobleTiNeural",
