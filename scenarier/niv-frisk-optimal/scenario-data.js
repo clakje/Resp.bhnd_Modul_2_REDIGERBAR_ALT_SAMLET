@@ -27,6 +27,7 @@ window.SCENARIO_DATA = {
   "initialState": {
     "machine": {
       "mode": "PS",
+      "niMode": "PSV",
       "ipap": 10,
       "epap": 5,
       "vcTidalVolume": 500,
@@ -92,10 +93,10 @@ window.SCENARIO_DATA = {
     "visibleControls": [
       "ipap",
       "epap",
+      "fio2",
       "cycling",
       "trigger",
       "riseTime",
-      "fio2",
       "apneaDelay",
       "alarmLeak",
       "alarmLowVt",
@@ -125,6 +126,17 @@ window.SCENARIO_DATA = {
         "default": 5,
         "min": 0,
         "max": 15,
+        "step": 1
+      },
+      {
+        "key": "fio2",
+        "group": "machine",
+        "label": "FiO₂",
+        "type": "range",
+        "unit": "%",
+        "default": 30,
+        "min": 21,
+        "max": 100,
         "step": 1
       },
       {
@@ -159,17 +171,6 @@ window.SCENARIO_DATA = {
         "min": 50,
         "max": 900,
         "step": 25
-      },
-      {
-        "key": "fio2",
-        "group": "machine",
-        "label": "FiO₂",
-        "type": "range",
-        "unit": "%",
-        "default": 30,
-        "min": 21,
-        "max": 100,
-        "step": 1
       },
       {
         "key": "apneaDelay",

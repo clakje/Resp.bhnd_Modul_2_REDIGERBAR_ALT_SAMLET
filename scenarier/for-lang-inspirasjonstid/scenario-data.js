@@ -27,6 +27,7 @@ window.SCENARIO_DATA = {
   "initialState": {
     "machine": {
       "mode": "PS",
+      "niMode": "PSV",
       "ipap": 12,
       "epap": 5,
       "vcTidalVolume": 500,

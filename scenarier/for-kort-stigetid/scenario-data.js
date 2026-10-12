@@ -27,6 +27,7 @@ window.SCENARIO_DATA = {
   "initialState": {
     "machine": {
       "mode": "PS",
+      "niMode": "PSV",
       "ipap": 10,
       "epap": 5,
       "vcTidalVolume": 500,
@@ -99,8 +100,8 @@ window.SCENARIO_DATA = {
       "ipap",
       "epap",
       "fio2",
-      "triggerMode",
       "cycling",
+      "triggerMode",
       "riseTime"
     ],
     "controls": [
@@ -138,6 +139,17 @@ window.SCENARIO_DATA = {
         "step": 1
       },
       {
+        "key": "cycling",
+        "group": "machine",
+        "label": "Inspiratorisk avslutning",
+        "type": "range",
+        "unit": "%",
+        "default": 25,
+        "min": 5,
+        "max": 90,
+        "step": 5
+      },
+      {
         "key": "triggerMode",
         "group": "machine",
         "label": "Triggertype",
@@ -154,17 +166,6 @@ window.SCENARIO_DATA = {
             "label": "Trykktrigger"
           }
         ]
-      },
-      {
-        "key": "cycling",
-        "group": "machine",
-        "label": "Inspiratorisk avslutning",
-        "type": "range",
-        "unit": "%",
-        "default": 25,
-        "min": 5,
-        "max": 90,
-        "step": 5
       },
       {
         "key": "riseTime",
